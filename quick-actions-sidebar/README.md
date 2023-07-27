@@ -89,3 +89,19 @@ To avoid additional clicks (`Extensions` -> `Aspire Budget v3.3 - Demo` -> `Open
 5. Enter the text `onOpenQuickActionsSidebar` and click `OK`
 
 ![](./screenshots/button-step-5.png)
+
+## Technical notes
+
+The organization of the scripts could be different, in my personal Apps Script project I split the scripts even more for better organization:
+```
+commons.gs
+configuration.gs
+category-transfers.gs
+transactions.gs
+quick-actions-sidebar-backend.gs
+quick-actions-sidebar.html
+quick-actions-sidebar-js.html
+quick-actions-sidebar-css.html
+```
+
+I kept only 2 files to simplify the process for users who don't care about this
