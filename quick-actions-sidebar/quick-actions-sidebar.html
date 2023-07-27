@@ -42,7 +42,7 @@
         </div>
         <div class="form-group">
           <label for="transferAmount">Amount</label>
-          <input type="number" step="0.01" class="form-control input-amount" id="transferAmount">
+          <input type="number" step="0.01" min="0" class="form-control input-amount" id="transferAmount">
         </div>
         <div class="form-group">
           <label for="transferMemo">Memo</label>
@@ -67,8 +67,11 @@
         </div>
         <div class="form-group">
           <label for="transactionAmount">Amount</label>
-          <input type="number" step="0.01" class="form-control input-amount input-red-amount" id="transactionAmount">
-          <small id="transactionAmountHelp" class="form-text text-muted">Enter a negative amount for inflows</small>
+          <input type="number" step="0.01" min="0" class="form-control input-amount input-red-amount" id="transactionAmount">
+          <div class="form-check form-check-inline" id="transactionIsInflowDiv">
+            <input class="form-check-input" type="checkbox" id="transactionIsInflow" name="transactionIsInflow">
+            <label class="form-check-label" for="transactionIsInflow">Inflow</label>
+          </div>
         </div>
         <div class="form-group">
           <label for="transactionMemo">Memo</label>
@@ -104,6 +107,8 @@
 
     <!-- Custom client-side JavaScript code. -->
     <script>
+      const CATEGORY_ACCOUNT_TRANSFER = '↕️ Account Transfer';
+
       function showNotification(notification, type = 'success') {
         const notificationId = `notificationId${parseInt(Math.random()*1000)}`;
         $(`<div>`, {
@@ -114,7 +119,7 @@
         }).appendTo('#notifications');
         setTimeout(() => {
             $(`#${notificationId}`).remove();
-          }, 8000);
+          }, 6000);
       }
 
       function setOptions(selectId, values) {
@@ -133,9 +138,17 @@
       }
 
       function onSubmitTransfer() {
+        if ($('#transferFrom').val() == '' || $('#transferTo').val() == '' || $('#transferAmount').val() == '') {
+          showNotification('Error: Transfer mandatory fields are missing', 'danger');
+          return;
+        }
+        const transferAmount = Number($('#transferAmount').val());
+        if (transferAmount < 0) {
+          showNotification('Error: Transfer amount must be greater or equals to $0', 'danger');
+          return;
+        }
         const transferFrom = $('#transferFrom').val();
         const transferTo = $('#transferTo').val();
-        const transferAmount = $('#transferAmount').val();
         const transferMemo = $('#transferMemo').val();
         google.script.run.withSuccessHandler(() => {
             clearValues(['transferAmount', 'transferMemo']);
@@ -146,12 +159,27 @@
       }
 
       function onSubmitTransaction() {
+        if ($('#transactionCategory').val() == '' || $('#transactionAccount').val() == '' || $('#transactionAmount').val() == '') {
+          showNotification('Error: Transaction mandatory fields are missing', 'danger');
+          return;
+        }
+        const transactionEnteredAmount = Number($('#transactionAmount').val());
+        if (transactionEnteredAmount < 0) {
+          showNotification('Error: Transaction amount must be greater or equals to $0. Use "Inflow" checkbox for inflow transactions', 'danger');
+          return;
+        }
         const transactionCategory = $('#transactionCategory').val();
+        if (transactionCategory == CATEGORY_ACCOUNT_TRANSFER && !$('#transactionToAccount').val()) {
+          showNotification('Error: Destination account is mandatory for account transfer transactions', 'danger');
+          return;
+        }
         const transactionAccount = $('#transactionAccount').val();
-        const transactionAmount = $('#transactionAmount').val();
         const transactionMemo = $('#transactionMemo').val();
         const transactionStatus = $('input[name="transactionStatus"]:checked').val();
-        const transactionToAccount = $('#transactionToAccount').val();
+        const transactionIsInflow = transactionCategory != CATEGORY_ACCOUNT_TRANSFER && $('#transactionIsInflow').prop('checked');
+        const transactionAmount = transactionIsInflow ? -1 * transactionEnteredAmount : transactionEnteredAmount;
+        const transactionToAccount = transactionCategory != CATEGORY_ACCOUNT_TRANSFER ? null : $('#transactionToAccount').val();
+
         google.script.run.withSuccessHandler(() => {
             clearValues(['transactionAmount', 'transactionMemo']);
             showNotification('Transaction created successfully', 'success');
@@ -164,18 +192,24 @@
           $('#submitTransfer').on('click', onSubmitTransfer);
           $('#submitTransaction').on('click', onSubmitTransaction);
           $('#transactionCategory').on('change', function() {
-            $("#transactionToAccountDiv").toggle(this.value == '↕️ Account Transfer');
-            if (this.value != '↕️ Account Transfer') {
+            $("#transactionToAccountDiv").toggle(this.value == CATEGORY_ACCOUNT_TRANSFER);
+            $('#transactionIsInflowDiv').toggle(this.value != CATEGORY_ACCOUNT_TRANSFER);
+            if (this.value != CATEGORY_ACCOUNT_TRANSFER) {
               $("#transactionToAccount").val('');
-            }
-          });
-          $('#transactionAmount').on('change', function() {
-            if (this.value == '' || Number(this.value) >= 0) {
-              $("#transactionAmount").removeClass('input-green-amount');
               $("#transactionAmount").addClass('input-red-amount');
             } else {
+              $('#transactionIsInflow').prop('checked', false);
+              $("#transactionAmount").removeClass('input-red-amount');
+              $("#transactionAmount").removeClass('input-green-amount');
+            }
+          });
+          $('#transactionIsInflow').change(function() {
+            if (this.checked) {
               $("#transactionAmount").removeClass('input-red-amount');
               $("#transactionAmount").addClass('input-green-amount');
+            } else {
+              $("#transactionAmount").removeClass('input-green-amount');
+              $("#transactionAmount").addClass('input-red-amount');
             }
           });
 
@@ -198,7 +232,7 @@
               setOptions('transactionAccount', accounts);
               setOptions('transactionToAccount', accounts);
             })
-            .getAccounts();
+            .getAllAccounts();
         });
     </script>
   </body>

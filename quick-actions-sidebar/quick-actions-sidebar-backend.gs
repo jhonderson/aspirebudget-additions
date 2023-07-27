@@ -31,20 +31,41 @@ const CONFIGURATION_ACCOUNT_FIRST_ROW = 9;
 const CONFIGURATION_ACCOUNT_LAST_ROW = 23;
 const CONFIGURATION_ACCOUNT_NAME_COLUMN_INDEX = 0;
 
-function getCategories() {
+function getAllCategories() {
   const configurationSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIGURATION_SHEET_NAME);
   const rows = configurationSheet.getRange(`B${CONFIGURATION_CATEGORY_FIRST_ROW}:C${configurationSheet.getLastRow()}`).getValues();
   const userCategories = rows
     .filter(row => row[CONFIGURATION_CATEGORY_TYPE_COLUMN_INDEX] != CATEGORY_TYPE_GROUP && row[CONFIGURATION_CATEGORY_NAME_COLUMN_INDEX] != '')
     .map(row => row[CONFIGURATION_CATEGORY_NAME_COLUMN_INDEX]);
-  return [CATEGORY_STARTING_BALANCE, CATEGORY_TRANSFER, CATEGORY_BALANCE_ADJUSTMENT, CATEGORY_AVAILABLE_TO_BUDGET, ...userCategories];
+  return [CATEGORY_TRANSFER, CATEGORY_BALANCE_ADJUSTMENT, CATEGORY_STARTING_BALANCE, CATEGORY_AVAILABLE_TO_BUDGET, ...userCategories];
 }
 
-function getAccounts() {
+function getCategoriesForTransaction() {
+  const invalidCategoriesForTransaction = getCreditCardAccounts();
+  return getAllCategories().filter(category => !invalidCategoriesForTransaction.includes(category));
+}
+
+function getCategoriesForCategoryTransfer() {
+  const invalidCategoriesForCategoryTransfer = [CATEGORY_STARTING_BALANCE, CATEGORY_TRANSFER, CATEGORY_BALANCE_ADJUSTMENT];
+  return getAllCategories().filter(category => !invalidCategoriesForCategoryTransfer.includes(category));
+}
+
+function getAllAccounts() {
+  return [...getBankAccounts(), ...getCreditCardAccounts()];
+}
+
+function getBankAccounts() {
   const configurationSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIGURATION_SHEET_NAME);
   const bankAccountRows = configurationSheet.getRange(`H${CONFIGURATION_ACCOUNT_FIRST_ROW}:H${CONFIGURATION_ACCOUNT_LAST_ROW}`).getValues();
+  return bankAccountRows
+    .filter(row => row[CONFIGURATION_ACCOUNT_NAME_COLUMN_INDEX] != '')
+    .map(row => row[CONFIGURATION_ACCOUNT_NAME_COLUMN_INDEX]);
+}
+
+function getCreditCardAccounts() {
+  const configurationSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIGURATION_SHEET_NAME);
   const creditAccountRows = configurationSheet.getRange(`I${CONFIGURATION_ACCOUNT_FIRST_ROW}:I${CONFIGURATION_ACCOUNT_LAST_ROW}`).getValues();
-  return [...bankAccountRows, ...creditAccountRows]
+  return creditAccountRows
     .filter(row => row[CONFIGURATION_ACCOUNT_NAME_COLUMN_INDEX] != '')
     .map(row => row[CONFIGURATION_ACCOUNT_NAME_COLUMN_INDEX]);
 }
@@ -129,26 +150,13 @@ function onOpenQuickActionsSidebar() {
   SpreadsheetApp.getUi().showSidebar(quickActionsSidebarHtml);
 }
 
-function getCategoriesForCategoryTransfer() {
-  const invalidCategoriesForCategoryTransfer = [CATEGORY_STARTING_BALANCE, CATEGORY_TRANSFER, CATEGORY_BALANCE_ADJUSTMENT];
-  return getCategories().filter(category => !invalidCategoriesForCategoryTransfer.includes(category));
-}
-
-function getCategoriesForTransaction() {
-  return getCategories();
-}
-
 function addQuickTransfer(from, to, amount, memo) {
-  if (!from || !to || amount == '') {
-    throw new Error('Unable to add transfer since mandatory fields are missing');
-  }
-  const numericAmount = Number(amount);
-  if (numericAmount <= 0) {
-    throw new Error(`Unable to add transfer since specified amount is invalid: $${numericAmount}`);
+  if (!from || !to) {
+    throw new Error('Transfer mandatory fields are missing');
   }
   const categoryTransfer = {
     date: currentLocalDate(),
-    amount: numericAmount,
+    amount,
     fromCategory: from,
     toCategory: to,
     memo
@@ -157,16 +165,15 @@ function addQuickTransfer(from, to, amount, memo) {
 }
 
 function addQuickTransaction(category, account, amount, memo, status, toAccount) {
-  if (!category || !account || amount == '') {
-    throw new Error('Unable to add transaction since mandatory fields are missing');
+  if (!category || !account) {
+    throw new Error('Transaction mandatory fields are missing');
   }
-  const numericAmount = Number(amount);
   if (category === CATEGORY_TRANSFER && !toAccount) {
-    throw new Error('Unable to add account transfer transaction since the destination account was not specified');
+    throw new Error('Destination account is mandatory for account transfer transactions');
   }
   const transaction = {
     date: currentLocalDate(),
-    amount: numericAmount,
+    amount,
     category: category,
     account: account,
     name: memo,
