@@ -12,6 +12,8 @@ It's a handy way to enter transactions and category transfers into the budget wi
 
 ## Setup steps
 
+The setup should take less than 15 minutes
+
 1. Go to your Aspire Budget spreadsheet and click `Extensions` -> `Apps Script`. This will open an unnamed Apps Script project, unless you already had a project attached to the spreadsheet:
 
 ![](./screenshots/setup-step-1.png)
