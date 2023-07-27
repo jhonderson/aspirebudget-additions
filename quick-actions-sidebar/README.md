@@ -104,4 +104,4 @@ quick-actions-sidebar-js.html
 quick-actions-sidebar-css.html
 ```
 
-I kept only 2 files to simplify the process for users who don't care about this
+I kept only 2 files in this repository to simplify the process for users who don't care about this
