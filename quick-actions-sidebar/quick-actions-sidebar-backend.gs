@@ -161,13 +161,8 @@ function addQuickTransaction(category, account, amount, memo, status, toAccount)
     throw new Error('Unable to add transaction since mandatory fields are missing');
   }
   const numericAmount = Number(amount);
-  if (category === CATEGORY_TRANSFER) {
-    if (!toAccount) {
-      throw new Error('Unable to add account transfer transaction since the destination account was not specified');
-    }
-    /*if (numericAmount < 0) {
-      throw new Error(`Unable to add account transfer transaction since the amount specified is invalid for an account transfer: $${numericAmount}`);
-    }*/
+  if (category === CATEGORY_TRANSFER && !toAccount) {
+    throw new Error('Unable to add account transfer transaction since the destination account was not specified');
   }
   const transaction = {
     date: currentLocalDate(),
