@@ -10,9 +10,9 @@ TODO
 
 TODO
 
-![](quick-actions-sidebar-screenshot.png)
+![](quick-actions-sidebar-with-button-screenshot.png)
 
 ## How it looks besides the budget
 
-![](quick-actions-sidebar-with-button-screenshot.png)
+![](quick-actions-sidebar-screenshot.png)
 
