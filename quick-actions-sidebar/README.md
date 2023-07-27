@@ -6,4 +6,13 @@
 
 TODO
 
+## Adding a button for quick access (optional but recommended)
+
+TODO
+
+![](quick-actions-sidebar-screenshot.png)
+
+## How it looks besides the budget
+
+![](quick-actions-sidebar-with-button-screenshot.png)
 
