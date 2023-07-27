@@ -12,7 +12,7 @@ TODO
 
 ![](quick-actions-sidebar-with-button-screenshot.png)
 
-## How it looks besides the budget
+## How it looks
 
 ![](quick-actions-sidebar-screenshot.png)
 
