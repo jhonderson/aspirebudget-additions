@@ -80,7 +80,7 @@ To avoid additional clicks (`Extensions` -> `Aspire Budget v3.3 - Demo` -> `Open
 
 ![](./screenshots/button-step-3.png)
 
-4. Position your button where you like and once you look the look of it and its position, click the three dots in the right top of the button, and click `Assign script`
+4. Position your button where you want and once you like the look of it and its position, click the three dots in the right top of the button, and click `Assign script`
 
 ![](./screenshots/button-step-4.1.png)
 
