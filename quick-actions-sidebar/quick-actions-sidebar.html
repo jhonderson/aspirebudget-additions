@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <head>
+      <link rel="stylesheet" type="text/css" href="https://getbootstrap.com/docs/4.0/dist/css/bootstrap.min.css" />
+      <!-- Custom styles. -->
+      <style>
+        body {
+          font-family: Nunito Sans;
+        }
+        .btn-primary, .btn-primary:hover, .btn-primary:active, .btn-primary:visited {
+          background-color: #ad4a86 !important;
+          border-color: black;
+          font-weight: bold;
+        }
+        .input-amount, .input-amount:focus {
+          color: black;
+          font-weight: bold;
+        }
+        .input-red-amount, .input-red-amount:focus {
+          color: #d66466;
+        }
+        .input-green-amount, .input-green-amount:focus {
+          color: #32ae7b;
+        }
+      </style>
+    </head>
+  </head>
+  <body>
+    <div class="container">
+      <hr>
+      <h5>Quick Category Transfer</h5>
+      <form class="transferForm">
+        <div class="form-group">
+          <label for="transferFrom">From</label>
+          <select class="form-control" id="transferFrom"></select>
+        </div>
+        <div class="form-group">
+          <label for="transferTo">To</label>
+          <select class="form-control" id="transferTo"></select>
+        </div>
+        <div class="form-group">
+          <label for="transferAmount">Amount</label>
+          <input type="number" step="0.01" class="form-control input-amount" id="transferAmount">
+        </div>
+        <div class="form-group">
+          <label for="transferMemo">Memo</label>
+          <input type="text" class="form-control" id="transferMemo">
+        </div>
+        <button class="btn btn-primary" id="submitTransfer">Submit</button>
+      </form>
+      <hr>
+      <h5>Quick Transaction</h5>
+      <form class="transactionForm">
+        <div class="form-group">
+          <label for="transactionCategory">Category</label>
+          <select class="form-control" id="transactionCategory"></select>
+        </div>
+        <div class="form-group">
+          <label for="transactionAccount">Account</label>
+          <select class="form-control" id="transactionAccount"></select>
+        </div>
+        <div class="form-group" id="transactionToAccountDiv" style="display:none;">
+          <label for="transactionToAccount">To Account</label>
+          <select class="form-control" id="transactionToAccount"><option></option></select>
+        </div>
+        <div class="form-group">
+          <label for="transactionAmount">Amount</label>
+          <input type="number" step="0.01" class="form-control input-amount input-red-amount" id="transactionAmount">
+          <small id="transactionAmountHelp" class="form-text text-muted">Enter a negative amount for inflows</small>
+        </div>
+        <div class="form-group">
+          <label for="transactionMemo">Memo</label>
+          <input type="text" class="form-control" id="transactionMemo">
+        </div>
+        <div class="form-group">
+          <div class="row">
+            <label class="col-form-label col-sm-2 pt-0">Status</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="transactionStatus" id="transactionStatusPending" value="🅿️" checked>
+            <label class="form-check-label" for="transactionStatusPending">
+              🅿️
+            </label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="transactionStatus" id="transactionStatusCleared" value="✅">
+            <label class="form-check-label" for="transactionStatusCleared">
+              ✅
+            </label>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="submitTransaction">Submit</button>
+      </form>
+      <hr>
+      <div id="notifications">
+      </div>
+    </div>
+
+    <!-- Load the jQuery and jQuery UI libraries. -->
+    <script src="https://code.jquery.com/jquery-1.8.3.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.10.0/jquery-ui.min.js"></script>
+
+    <!-- Custom client-side JavaScript code. -->
+    <script>
+      function showNotification(notification, type = 'success') {
+        const notificationId = `notificationId${parseInt(Math.random()*1000)}`;
+        $(`<div>`, {
+            id: notificationId,
+            class: `alert alert-${type}`,
+            role: 'alert',
+            html: notification
+        }).appendTo('#notifications');
+        setTimeout(() => {
+            $(`#${notificationId}`).remove();
+          }, 8000);
+      }
+
+      function setOptions(selectId, values) {
+        values.forEach(value => {
+          $(`#${selectId}`).append($('<option>', { 
+            value: value,
+            text : value 
+          }));
+        });
+      }
+
+      function clearValues(ids) {
+        ids.forEach(id => {
+          $(`#${id}`).val('');
+        });
+      }
+
+      function onSubmitTransfer() {
+        const transferFrom = $('#transferFrom').val();
+        const transferTo = $('#transferTo').val();
+        const transferAmount = $('#transferAmount').val();
+        const transferMemo = $('#transferMemo').val();
+        google.script.run.withSuccessHandler(() => {
+            clearValues(['transferAmount', 'transferMemo']);
+            showNotification('Transfer created successfully', 'success');
+          })
+          .withFailureHandler((error) => showNotification(error.message, 'danger'))
+          .addQuickTransfer(transferFrom, transferTo, transferAmount, transferMemo);
+      }
+
+      function onSubmitTransaction() {
+        const transactionCategory = $('#transactionCategory').val();
+        const transactionAccount = $('#transactionAccount').val();
+        const transactionAmount = $('#transactionAmount').val();
+        const transactionMemo = $('#transactionMemo').val();
+        const transactionStatus = $('input[name="transactionStatus"]:checked').val();
+        const transactionToAccount = $('#transactionToAccount').val();
+        google.script.run.withSuccessHandler(() => {
+            clearValues(['transactionAmount', 'transactionMemo']);
+            showNotification('Transaction created successfully', 'success');
+          })
+          .withFailureHandler((error) => showNotification(error.message, 'danger'))
+          .addQuickTransaction(transactionCategory, transactionAccount, transactionAmount, transactionMemo, transactionStatus, transactionToAccount);
+      }
+
+      $(function() {
+          $('#submitTransfer').on('click', onSubmitTransfer);
+          $('#submitTransaction').on('click', onSubmitTransaction);
+          $('#transactionCategory').on('change', function() {
+            $("#transactionToAccountDiv").toggle(this.value == '↕️ Account Transfer');
+            if (this.value != '↕️ Account Transfer') {
+              $("#transactionToAccount").val('');
+            }
+          });
+          $('#transactionAmount').on('change', function() {
+            if (this.value == '' || Number(this.value) >= 0) {
+              $("#transactionAmount").removeClass('input-green-amount');
+              $("#transactionAmount").addClass('input-red-amount');
+            } else {
+              $("#transactionAmount").removeClass('input-red-amount');
+              $("#transactionAmount").addClass('input-green-amount');
+            }
+          });
+
+          google.script.run.withSuccessHandler((categories) => {
+              setOptions('transferFrom', categories);
+              setOptions('transferTo', categories);
+              if (categories.length > 1) {
+                $("#transferTo").val($("#transferTo option:eq(1)").val());
+              }
+            })
+            .getCategoriesForCategoryTransfer();
+          google.script.run.withSuccessHandler((categories) => {
+              setOptions('transactionCategory', categories);
+              if (categories.length > 4) {
+                $("#transactionCategory").val($("#transactionCategory option:eq(4)").val());
+              }
+            })
+            .getCategoriesForTransaction();
+          google.script.run.withSuccessHandler((accounts) => {
+              setOptions('transactionAccount', accounts);
+              setOptions('transactionToAccount', accounts);
+            })
+            .getAccounts();
+        });
+    </script>
+  </body>
+</html>
+
