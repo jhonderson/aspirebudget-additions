@@ -125,3 +125,15 @@ function Api() {
   };
 }
 
+function authorizationTrigger() {
+  addTransactions([{
+    date: currentLocalDate(),
+    amount: Number(12),
+    category: 'Dummy Category',
+    account: 'Dummy Account',
+    name: 'REMOVE ME',
+    pending: true,
+    toAccount: null
+  }]); 
+}
+
