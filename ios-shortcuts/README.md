@@ -55,7 +55,7 @@ To make this work you'll need to create an Apps Scripts project inside your spre
 ![](./screenshots/setup-step-6.png)
 
 8. From your iPhone or iPad, go to the [transactions shortcut](https://www.icloud.com/shortcuts/e1a22f09e5c6444d885c32168bfb0bfe), and tap `Set Up Shortcut`
-9. For the first question, paste the `Web app URL` from the step 6
+9. For the first question, paste the `Web app URL` from the step 7
 10. For the second question, paste the list of your categories, excluding your credit cards, as these shouldn't be used for transactions. One category per line, i.e
     ```
     Category 1
@@ -63,6 +63,6 @@ To make this work you'll need to create an Apps Scripts project inside your spre
     ```
 11. For the third question, paste the list of your accounts
 12. From your iPhone or iPad, go to the [category transfers shortcut](https://www.icloud.com/shortcuts/2d200b821e6249f89fbdbdc17982b49a), and tap `Set Up Shortcut`
-13. For the first question, paste the `Web app URL` from the step 6
+13. For the first question, paste the `Web app URL` from the step 7
 14. For the second question, paste the list of your categories, including your credit cards, as these can be used for category transfers
 15. Feel free to add these shortcuts as bookmarks in your home screen
